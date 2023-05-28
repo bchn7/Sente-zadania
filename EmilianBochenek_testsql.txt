@@ -1,0 +1,65 @@
+#Emilian Bochenek
+#Zadanie testowe SQL
+
+#1) Suma wartości zamówień brutto oraz netto na dany rok i miesiąc (kolumny: rok, miesiąc,suma wartości brutto, suma wartości netto)
+
+SELECT
+    EXTRACT(YEAR FROM o.regdate) AS rok,
+    EXTRACT(MONTH FROM o.regdate) AS miesiąc,
+    SUM(op.pricegross) AS suma_wartosci_brutto,
+    SUM(op.pricenet) AS suma_wartosci_netto
+FROM
+    orders o
+    JOIN order_positions op ON o.ref = op.order_ref
+GROUP BY
+    rok, miesiąc;
+
+
+#2) Zamówienie zawierające najwięcej pozycji, nazwę klienta oraz ilość pozycji (kolumny: symbol zamówienia, nazwa klienta, ilość pozycji)
+
+SELECT
+    o.symbol AS symbol_zamowienia,
+    c.name AS nazwa_klienta,
+    COUNT(op.ref) AS ilosc_pozycji
+FROM
+    orders o
+    JOIN clients c ON o.client_ref = c.ref
+    JOIN order_positions op ON o.ref = op.order_ref
+GROUP BY
+    o.ref, o.symbol, c.name
+ORDER BY
+    ilosc_pozycji DESC
+LIMIT 1;
+
+
+
+#3) Zafakturowane zamówienia posiadające więcej niż 5 pozycji (kolumny: symbol zamówienia, ilość pozycji)
+
+SELECT
+    o.symbol AS symbol_zamowienia,
+    COUNT(op.ref) AS ilosc_pozycji
+FROM
+    orders o
+    JOIN order_positions op ON o.ref = op.order_ref
+WHERE
+    o.invoiced = 1
+GROUP BY
+    o.ref, o.symbol
+HAVING
+    COUNT(op.ref) > 5;
+
+
+#4) 10 klientów, którzy złożyli najmniej zamówień (kolumny: ref klienta, nazwa klienta, ilość zamówień)
+
+SELECT
+    c.ref AS ref_klienta,
+    c.name AS nazwa_klienta,
+    COUNT(o.ref) AS ilosc_zamowien
+FROM
+    clients c
+    LEFT JOIN orders o ON c.ref = o.client_ref
+GROUP BY
+    c.ref, c.name
+ORDER BY
+    ilosc_zamowien
+LIMIT 10;
